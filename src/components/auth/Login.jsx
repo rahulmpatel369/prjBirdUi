@@ -4,10 +4,12 @@ import Joi from "@hapi/joi";
 
 import { setData, getData, resetData } from "./../../services/dataService";
 import { userLogin, adminLogin } from "./../../services/authService";
+import { handleHttpError } from "./../../services/httpErrorService";
+
 import Input from "./../shared/Input";
 import Card from "./../shared/Card";
 
-const Login = ({ history, userType }) => {
+const Login = ({ history, userType, setRole }) => {
   const [ username, setUsername ] = useState("");
   const [ password, setPassword ] = useState("");
   const [ errors, setErrors ] = useState({email: "", password: "", login: ""});
@@ -23,22 +25,21 @@ const Login = ({ history, userType }) => {
       setData("token_type", token_type);
       setData("access_token", access_token);
       setData("role", role);
-      setData("user", user);
-      history.push("/birds");
+      setData("user", user.name);
+      window.location.reload();
     }
   }
 
   const handleError = (error) => {
-    if(error.status === 400){
+    if(error && (error.status === 400 || error.status === 401)){
       let { login, email, password} = error.data.error;
-      console.log(error.data.error, error.data);
       setErrors({
         login: (login != undefined) ? login : "",
         username: email,
         password: password
       });
     }else { 
-      resetData();
+      handleHttpError(error);
     }
   }
 
